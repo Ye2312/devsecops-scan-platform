@@ -1,0 +1,15 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vulnerable-app
+spec:
+  replicas: 1
+  template:
+    spec:
+      containers:
+        - name: app
+          image: vulnerable-app:latest
+          securityContext:
+            privileged: true
+          ports:
+            - containerPort: 5000
