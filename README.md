@@ -2,10 +2,10 @@
 
 🚧 work in progress
 
-Микросервисная платформа для автоматического security-сканирования
-GitHub-репозиториев (SAST + SCA). Написана как демонстрация практического
-DevSecOps-стека: Docker, Kubernetes, CI/CD с security-гейтами,
-безопасная работа с секретами и сетевая сегментация между сервисами.
+Microservice platform for automated security scanning of GitHub
+repositories (SAST + SCA). Built as a hands-on demonstration of a practical
+DevSecOps stack: Docker, Kubernetes, CI/CD with security gates, safe
+secrets handling, and network segmentation between services.
 
-**Стек:** Python (FastAPI), PostgreSQL, Docker, Kubernetes, GitHub Actions,
+**Stack:** Python (FastAPI), PostgreSQL, Docker, Kubernetes, GitHub Actions,
 Semgrep, Trivy
