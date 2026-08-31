@@ -48,7 +48,4 @@ def run_trivy(target: Path) -> list[dict[str, Any]]:
     except json.JSONDecodeError as exc:
         raise TrivyScanError(f"trivy produced invalid JSON for {target}") from exc
 
-    # Unlike Semgrep's "results", Trivy omits "Results" entirely when there
-    # is nothing to report — that's the normal shape of a clean scan, not
-    # a broken one, so this falls back to [] rather than raising.
     return payload.get("Results", [])

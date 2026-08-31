@@ -28,8 +28,6 @@ def _validate_github_url(url: str) -> tuple[str, str]:
     if parsed.scheme != "https":
         raise InvalidRepoUrlError(f"unsupported scheme: {parsed.scheme!r}")
 
-    # Exact match, not endswith()/in — "evilgithub.com" or "github.com.evil.com"
-    # must not pass here.
     if parsed.hostname != "github.com":
         raise InvalidRepoUrlError(f"unsupported host: {parsed.hostname!r}")
 

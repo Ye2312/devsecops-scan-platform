@@ -20,7 +20,6 @@ def main() -> None:
     logging.basicConfig(level=settings.log_level, format="%(asctime)s %(levelname)s %(name)s %(message)s")
     signal.signal(signal.SIGTERM, _handle_sigterm)
     log.info("worker started")
-    # Poll loop lands in step 5.
     sys.exit(0)
 
 
