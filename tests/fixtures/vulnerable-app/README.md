@@ -17,8 +17,9 @@ known answer instead of an unpredictable live repository.
 - outdated `Flask`, `PyYAML`, `requests`, `Jinja2` — each with known CVEs
 
 **Secrets (`.env`)**
-- AWS access key + secret key (AWS's own published example values —
-  not real credentials, used because scanners recognize the pattern)
+- AWS access key + secret key — fake but correctly-formatted values, not
+  AWS's well-known published example keys, which real scanners specifically
+  allowlist as known-safe and therefore won't flag
 - a plaintext database password
 
 **IaC (`Dockerfile`, `k8s.yaml`)**
