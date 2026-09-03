@@ -42,6 +42,8 @@ def run_trivy(target: Path) -> list[dict[str, Any]]:
     except subprocess.CalledProcessError as exc:
         stderr = exc.stderr.decode(errors="replace") if exc.stderr else ""
         raise TrivyScanError(f"trivy scan of {target} failed: {stderr.strip()}") from exc
+    except OSError as exc:
+        raise TrivyScanError(f"could not run trivy: {exc}") from exc
 
     try:
         payload = json.loads(result.stdout)

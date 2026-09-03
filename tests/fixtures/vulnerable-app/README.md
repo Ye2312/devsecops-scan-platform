@@ -24,6 +24,10 @@ known answer instead of an unpredictable live repository.
 
 **IaC (`Dockerfile`, `k8s.yaml`)**
 - root base image with no `USER` instruction (container runs as root)
-- `ADD` from a remote URL instead of a verified `COPY`
+- `ADD` used where `COPY` would do — note Trivy's DS-0005 exempts the
+  remote-URL and archive forms, so only the local-path form is detected
+- no `HEALTHCHECK` defined
 - secret baked into an image layer via `ENV`
-- `privileged: true` container in the Kubernetes manifest
+- `privileged: true` container in the Kubernetes manifest, plus the absent
+  hardening Trivy reports alongside it (no resource limits, no seccomp
+  profile, no dropped capabilities, writable root filesystem)

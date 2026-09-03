@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import copy
 from dataclasses import dataclass
 from typing import Any
 
@@ -29,10 +30,27 @@ class Finding:
 
 
 def _normalize_severity(value: str, mapping: dict[str, str] | None = None) -> str:
-    if mapping is not None:
-        value = mapping.get(value, "UNKNOWN")
     value = value.upper()
+    if mapping is not None:
+        value = mapping.get(value, value)
     return value if value in _KNOWN_SEVERITIES else "UNKNOWN"
+
+
+def _without_code_block(obj: dict[str, Any], *path: str) -> dict[str, Any]:
+    """Copy `obj` with the nested Trivy Code block removed.
+
+    Code.Lines[].Content holds verbatim file bytes. Trivy masks only lines
+    where its secret scanner matched, so neighbouring credentials — and every
+    line on the misconfiguration path — would otherwise be stored in cleartext.
+    """
+    stripped = copy.deepcopy(obj)
+    node: Any = stripped
+    for key in path[:-1]:
+        node = node.get(key)
+        if not isinstance(node, dict):
+            return stripped
+    node.pop(path[-1], None)
+    return stripped
 
 
 def normalize_semgrep(results: list[dict[str, Any]]) -> list[Finding]:
@@ -95,7 +113,7 @@ def normalize_trivy(results: list[dict[str, Any]]) -> list[Finding]:
                     package_name=None,
                     installed_version=None,
                     fixed_version=None,
-                    raw=secret,
+                    raw=_without_code_block(secret, "Code"),
                 )
             )
 
@@ -114,7 +132,7 @@ def normalize_trivy(results: list[dict[str, Any]]) -> list[Finding]:
                     package_name=None,
                     installed_version=None,
                     fixed_version=None,
-                    raw=misconfig,
+                    raw=_without_code_block(misconfig, "CauseMetadata", "Code"),
                 )
             )
     return findings

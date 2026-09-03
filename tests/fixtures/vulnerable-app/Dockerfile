@@ -2,7 +2,7 @@ FROM python:3.8
 
 WORKDIR /app
 
-ADD https://example.com/setup.sh /app/setup.sh
+ADD ./setup.sh /app/setup.sh
 
 COPY requirements.txt .
 RUN pip install -r requirements.txt

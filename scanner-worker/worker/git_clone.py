@@ -31,8 +31,13 @@ def _validate_github_url(url: str) -> tuple[str, str]:
     if parsed.hostname != "github.com":
         raise InvalidRepoUrlError(f"unsupported host: {parsed.hostname!r}")
 
-    if parsed.port not in (None, 443):
-        raise InvalidRepoUrlError(f"unsupported port: {parsed.port!r}")
+    try:
+        port = parsed.port
+    except ValueError as exc:
+        raise InvalidRepoUrlError(f"malformed port in URL: {parsed.netloc!r}") from exc
+
+    if port not in (None, 443):
+        raise InvalidRepoUrlError(f"unsupported port: {port!r}")
 
     if parsed.username or parsed.password:
         raise InvalidRepoUrlError("credentials embedded in the URL are not allowed")
@@ -74,18 +79,30 @@ def clone_repository(url: str) -> Iterator[Path]:
         except subprocess.CalledProcessError as exc:
             stderr = exc.stderr.decode(errors="replace") if exc.stderr else ""
             raise CloneFailedError(f"git clone failed for {clone_url}: {stderr.strip()}") from exc
+        except OSError as exc:
+            raise CloneFailedError(f"could not run git: {exc}") from exc
 
-        yield Path(workdir)
+        checkout = Path(workdir)
+        for ignore_file in checkout.rglob(".semgrepignore"):
+            ignore_file.unlink(missing_ok=True)
+
+        yield checkout
     finally:
         shutil.rmtree(workdir, ignore_errors=True)
 
 
-def get_head_commit(repo_path: Path) -> str:
-    result = subprocess.run(  # noqa: S603
-        ["git", "-C", str(repo_path), "rev-parse", "HEAD"],  # noqa: S607
-        capture_output=True,
-        timeout=10,
-        check=True,
-        text=True,
-    )
+def get_head_commit(repo_path: Path) -> str | None:
+    """Return the checked-out commit SHA, or None if the repository has no commits."""
+    try:
+        result = subprocess.run(  # noqa: S603
+            ["git", "-C", str(repo_path), "rev-parse", "HEAD"],  # noqa: S607
+            capture_output=True,
+            timeout=10,
+            check=True,
+            text=True,
+        )
+    except subprocess.CalledProcessError:
+        return None
+    except (subprocess.TimeoutExpired, OSError) as exc:
+        raise CloneFailedError(f"could not read HEAD of {repo_path}: {exc}") from exc
     return result.stdout.strip()
