@@ -2,51 +2,21 @@ from __future__ import annotations
 
 import contextlib
 import os
-import re
 import shutil
 import subprocess
 import tempfile
 from collections.abc import Iterator
 from pathlib import Path
-from urllib.parse import urlparse
 
-_REPO_PATH_RE = re.compile(r"^/(?P<owner>[A-Za-z0-9_.-]+)/(?P<repo>[A-Za-z0-9_.-]+?)(?:\.git)?/?$")
+from devsecops_shared.repo_url import InvalidRepoUrlError, validate_github_url
+
+__all__ = ["CloneFailedError", "InvalidRepoUrlError", "clone_repository", "get_head_commit"]
+
 _CLONE_TIMEOUT_SECONDS = 120
-
-
-class InvalidRepoUrlError(ValueError):
-    """The supplied URL isn't a well-formed https://github.com/<owner>/<repo> URL."""
 
 
 class CloneFailedError(RuntimeError):
     """`git clone` failed, was rejected, or timed out."""
-
-
-def _validate_github_url(url: str) -> tuple[str, str]:
-    parsed = urlparse(url)
-
-    if parsed.scheme != "https":
-        raise InvalidRepoUrlError(f"unsupported scheme: {parsed.scheme!r}")
-
-    if parsed.hostname != "github.com":
-        raise InvalidRepoUrlError(f"unsupported host: {parsed.hostname!r}")
-
-    try:
-        port = parsed.port
-    except ValueError as exc:
-        raise InvalidRepoUrlError(f"malformed port in URL: {parsed.netloc!r}") from exc
-
-    if port not in (None, 443):
-        raise InvalidRepoUrlError(f"unsupported port: {port!r}")
-
-    if parsed.username or parsed.password:
-        raise InvalidRepoUrlError("credentials embedded in the URL are not allowed")
-
-    match = _REPO_PATH_RE.match(parsed.path)
-    if not match:
-        raise InvalidRepoUrlError(f"URL does not look like a repo path: {parsed.path!r}")
-
-    return match.group("owner"), match.group("repo")
 
 
 @contextlib.contextmanager
@@ -56,7 +26,7 @@ def clone_repository(url: str) -> Iterator[Path]:
     Yields the checkout path. The directory is removed when the context
     exits, whether or not the block raised.
     """
-    owner, repo = _validate_github_url(url)
+    owner, repo = validate_github_url(url)
     clone_url = f"https://github.com/{owner}/{repo}.git"
 
     workdir = tempfile.mkdtemp(prefix="scan-")

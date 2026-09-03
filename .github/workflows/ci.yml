@@ -15,6 +15,25 @@ concurrency:
 jobs:
   lint-and-test:
     runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: scanner
+          POSTGRES_PASSWORD: scanner
+          POSTGRES_DB: scanner
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql+psycopg://scanner:scanner@localhost:5432/scanner
+
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -32,5 +51,9 @@ jobs:
           ruff format --check .
       - name: Type check
         run: mypy shared app-api scanner-worker
+      - name: Migrate
+        run: alembic upgrade head
+      - name: Schema drift check
+        run: alembic check
       - name: Test
         run: pytest -v
