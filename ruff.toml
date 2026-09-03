@@ -7,3 +7,4 @@ ignore = ["S101"]
 
 [lint.per-file-ignores]
 "tests/**" = ["S"]
+"shared/migrations/versions/**" = ["E501"]
