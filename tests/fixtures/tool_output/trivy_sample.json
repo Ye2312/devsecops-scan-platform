@@ -1,0 +1,316 @@
+[
+  {
+    "Target": "requirements.txt",
+    "Class": "lang-pkgs",
+    "Type": "pip",
+    "Vulnerabilities": [
+      {
+        "VulnerabilityID": "CVE-2018-1000656",
+        "VendorIDs": [
+          "GHSA-562c-5r94-xh97"
+        ],
+        "PkgName": "Flask",
+        "PkgIdentifier": {
+          "PURL": "pkg:pypi/flask@0.12.2",
+          "UID": "3526eb607d2e8ccc"
+        },
+        "InstalledVersion": "0.12.2",
+        "FixedVersion": "0.12.3",
+        "Status": "fixed",
+        "SeveritySource": "ghsa",
+        "PrimaryURL": "https://avd.aquasec.com/nvd/cve-2018-1000656",
+        "DataSource": {
+          "ID": "ghsa",
+          "Name": "GitHub Security Advisory pip",
+          "URL": "https://github.com/advisories?query=type%3Areviewed+ecosystem%3Apip"
+        },
+        "Fingerprint": "sha256:23585375f136be6911b568e6b4b393e3c96d86345f42e1f116714e3221360058",
+        "Title": "python-flask: Denial of Service via crafted JSON file",
+        "Description": "The Pallets Project flask version Before 0.12.3 contains a CWE-20: Improper Input Validation vulnerability in flask that can result in Large amount of memory usage possibly leading to denial of service. This attack appear to be exploitable via Attacker provides JSON data in incorrect encoding. This vulnerability appears to have been fixed in 0.12.3. NOTE: this may overlap CVE-2019-1010083.",
+        "Severity": "HIGH",
+        "CweIDs": [
+          "CWE-20"
+        ],
+        "VendorSeverity": {
+          "ghsa": 3,
+          "nvd": 3,
+          "redhat": 1,
+          "ubuntu": 1
+        },
+        "CVSS": {
+          "ghsa": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+            "V40Vector": "CVSS:4.0/AV:N/AC:L/AT:N/PR:N/UI:N/VC:N/VI:N/VA:H/SC:N/SI:N/SA:N",
+            "V3Score": 7.5,
+            "V40Score": 8.7
+          },
+          "nvd": {
+            "V2Vector": "AV:N/AC:L/Au:N/C:N/I:N/A:P",
+            "V3Vector": "CVSS:3.0/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+            "V2Score": 5,
+            "V3Score": 7.5
+          },
+          "redhat": {
+            "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:N/I:N/A:H",
+            "V3Score": 7.5
+          }
+        },
+        "References": [
+          "https://access.redhat.com/security/cve/CVE-2018-1000656",
+          "https://github.com/advisories/GHSA-562c-5r94-xh97",
+          "https://github.com/pallets/flask",
+          "https://github.com/pallets/flask/commit/b178e89e4456e777b1a7ac6d7199052d0dfdbbbe",
+          "https://github.com/pallets/flask/pull/2691",
+          "https://github.com/pallets/flask/releases/tag/0.12.3",
+          "https://github.com/pypa/advisory-database/tree/main/vulns/flask/PYSEC-2018-66.yaml",
+          "https://lists.debian.org/debian-lts-announce/2019/08/msg00025.html",
+          "https://nvd.nist.gov/vuln/detail/CVE-2018-1000656",
+          "https://security.netapp.com/advisory/ntap-20190221-0001",
+          "https://security.netapp.com/advisory/ntap-20190221-0001/",
+          "https://ubuntu.com/security/notices/USN-4378-1",
+          "https://usn.ubuntu.com/4378-1",
+          "https://usn.ubuntu.com/4378-1/",
+          "https://www.cve.org/CVERecord?id=CVE-2018-1000656"
+        ],
+        "PublishedDate": "2018-08-20T19:31:45.34Z",
+        "LastModifiedDate": "2026-06-17T01:33:02.153Z"
+      }
+    ]
+  },
+  {
+    "Target": "Dockerfile",
+    "Class": "config",
+    "Type": "dockerfile",
+    "Misconfigurations": [
+      {
+        "Type": "Dockerfile Security Check",
+        "ID": "DS-0031",
+        "Title": "Secrets passed via `build-args` or envs or copied secret files",
+        "Description": "Passing secrets via `build-args` or envs or copying secret files can leak them out",
+        "Message": "Possible exposure of secret env \"AWS_SECRET_ACCESS_KEY\" in ENV",
+        "Namespace": "builtin.dockerfile.DS031",
+        "Query": "data.builtin.dockerfile.DS031.deny",
+        "Resolution": "Use secret mount if secrets are needed during image build. Use volume mount if secret files are needed during container runtime.",
+        "Severity": "CRITICAL",
+        "PrimaryURL": "https://avd.aquasec.com/misconfig/ds-0031",
+        "References": [
+          "https://docs.docker.com/build/building/secrets/",
+          "https://avd.aquasec.com/misconfig/ds-0031"
+        ],
+        "Status": "FAIL",
+        "CauseMetadata": {
+          "Provider": "Dockerfile",
+          "Service": "general",
+          "StartLine": 12,
+          "EndLine": 12,
+          "Code": {
+            "Lines": [
+              {
+                "Number": 12,
+                "Content": "ENV AWS_SECRET_ACCESS_KEY=AKIAZ3X9K2M4NQPLW8RT",
+                "IsCause": true,
+                "Annotation": "",
+                "Truncated": false,
+                "Highlighted": "\u001b[38;5;64mENV\u001b[0m \u001b[38;5;33mAWS_SECRET_ACCESS_KEY\u001b[0m\u001b[38;5;245m=\u001b[0mAKIAZ3X9K2M4NQPLW8RT",
+                "FirstCause": true,
+                "LastCause": true
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Target": "k8s.yaml",
+    "Class": "config",
+    "Type": "kubernetes",
+    "Misconfigurations": [
+      {
+        "Type": "Kubernetes Security Check",
+        "ID": "KSV-0001",
+        "Title": "Can elevate its own privileges",
+        "Description": "A program inside the container can elevate its own privileges and run as root, which might give the program control over the container and node.",
+        "Message": "Container 'app' of Deployment 'vulnerable-app' should set 'securityContext.allowPrivilegeEscalation' to false",
+        "Namespace": "builtin.kubernetes.KSV001",
+        "Query": "data.builtin.kubernetes.KSV001.deny",
+        "Resolution": "Set 'set containers[].securityContext.allowPrivilegeEscalation' to 'false'.",
+        "Severity": "MEDIUM",
+        "PrimaryURL": "https://avd.aquasec.com/misconfig/ksv-0001",
+        "References": [
+          "https://kubernetes.io/docs/concepts/security/pod-security-standards/#restricted",
+          "https://avd.aquasec.com/misconfig/ksv-0001"
+        ],
+        "Status": "FAIL",
+        "CauseMetadata": {
+          "Provider": "Kubernetes",
+          "Service": "general",
+          "StartLine": 10,
+          "EndLine": 15,
+          "Code": {
+            "Lines": [
+              {
+                "Number": 10,
+                "Content": "        - name: app",
+                "IsCause": true,
+                "Annotation": "",
+                "Truncated": false,
+                "Highlighted": "        - \u001b[38;5;33mname\u001b[0m: app",
+                "FirstCause": true,
+                "LastCause": false
+              },
+              {
+                "Number": 11,
+                "Content": "          image: vulnerable-app:latest",
+                "IsCause": true,
+                "Annotation": "",
+                "Truncated": false,
+                "Highlighted": "          \u001b[38;5;33mimage\u001b[0m: vulnerable-app:latest",
+                "FirstCause": false,
+                "LastCause": false
+              },
+              {
+                "Number": 12,
+                "Content": "          securityContext:",
+                "IsCause": true,
+                "Annotation": "",
+                "Truncated": false,
+                "Highlighted": "          \u001b[38;5;33msecurityContext\u001b[0m:",
+                "FirstCause": false,
+                "LastCause": false
+              },
+              {
+                "Number": 13,
+                "Content": "            privileged: true",
+                "IsCause": true,
+                "Annotation": "",
+                "Truncated": false,
+                "Highlighted": "            \u001b[38;5;33mprivileged\u001b[0m: \u001b[38;5;166mtrue",
+                "FirstCause": false,
+                "LastCause": false
+              },
+              {
+                "Number": 14,
+                "Content": "          ports:",
+                "IsCause": true,
+                "Annotation": "",
+                "Truncated": false,
+                "Highlighted": "\u001b[0m          \u001b[38;5;33mports\u001b[0m:",
+                "FirstCause": false,
+                "LastCause": false
+              },
+              {
+                "Number": 15,
+                "Content": "            - containerPort: 5000",
+                "IsCause": true,
+                "Annotation": "",
+                "Truncated": false,
+                "Highlighted": "            - \u001b[38;5;33mcontainerPort\u001b[0m: \u001b[38;5;37m5000\u001b[0m",
+                "FirstCause": false,
+                "LastCause": true
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  {
+    "Target": ".env",
+    "Class": "secret",
+    "Secrets": [
+      {
+        "RuleID": "aws-access-key-id",
+        "Category": "AWS",
+        "Severity": "CRITICAL",
+        "Title": "AWS Access Key ID",
+        "StartLine": 1,
+        "EndLine": 1,
+        "Code": {
+          "Lines": [
+            {
+              "Number": 1,
+              "Content": "AWS_ACCESS_KEY_ID=********************",
+              "IsCause": true,
+              "Annotation": "",
+              "Truncated": false,
+              "Highlighted": "AWS_ACCESS_KEY_ID=********************",
+              "FirstCause": true,
+              "LastCause": true
+            },
+            {
+              "Number": 2,
+              "Content": "AWS_SECRET_ACCESS_KEY=****************************************",
+              "IsCause": false,
+              "Annotation": "",
+              "Truncated": false,
+              "Highlighted": "AWS_SECRET_ACCESS_KEY=****************************************",
+              "FirstCause": false,
+              "LastCause": false
+            }
+          ]
+        },
+        "Match": "AWS_ACCESS_KEY_ID=********************",
+        "Offset": 18
+      }
+    ]
+  },
+  {
+    "Target": "Dockerfile",
+    "Class": "secret",
+    "Secrets": [
+      {
+        "RuleID": "aws-access-key-id",
+        "Category": "AWS",
+        "Severity": "CRITICAL",
+        "Title": "AWS Access Key ID",
+        "StartLine": 12,
+        "EndLine": 12,
+        "Code": {
+          "Lines": [
+            {
+              "Number": 10,
+              "Content": "COPY . .",
+              "IsCause": false,
+              "Annotation": "",
+              "Truncated": false,
+              "Highlighted": "COPY . .",
+              "FirstCause": false,
+              "LastCause": false
+            },
+            {
+              "Number": 11,
+              "Content": "",
+              "IsCause": false,
+              "Annotation": "",
+              "Truncated": false,
+              "FirstCause": false,
+              "LastCause": false
+            },
+            {
+              "Number": 12,
+              "Content": "ENV AWS_SECRET_ACCESS_KEY=********************",
+              "IsCause": true,
+              "Annotation": "",
+              "Truncated": false,
+              "Highlighted": "ENV AWS_SECRET_ACCESS_KEY=********************",
+              "FirstCause": true,
+              "LastCause": true
+            },
+            {
+              "Number": 13,
+              "Content": "",
+              "IsCause": false,
+              "Annotation": "",
+              "Truncated": false,
+              "FirstCause": false,
+              "LastCause": false
+            }
+          ]
+        },
+        "Match": "ENV AWS_SECRET_ACCESS_KEY=********************",
+        "Offset": 158
+      }
+    ]
+  }
+]

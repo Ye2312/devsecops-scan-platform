@@ -1,0 +1,216 @@
+[
+  {
+    "check_id": "python.django.security.injection.tainted-sql-string.tainted-sql-string",
+    "path": "app/main.py",
+    "start": {
+      "line": 15,
+      "col": 13,
+      "offset": 270
+    },
+    "end": {
+      "line": 15,
+      "col": 63,
+      "offset": 320
+    },
+    "extra": {
+      "message": "Detected user input used to manually construct a SQL string. This is usually bad practice because manual construction could accidentally result in a SQL injection. An attacker could use a SQL injection to steal or modify contents of the database. Instead, use a parameterized query which is available by default in most database engines. Alternatively, consider using the Django object-relational mappers (ORM) instead of raw SQL queries.",
+      "metadata": {
+        "cwe": [
+          "CWE-915: Improperly Controlled Modification of Dynamically-Determined Object Attributes"
+        ],
+        "owasp": [
+          "A08:2021 - Software and Data Integrity Failures",
+          "A08:2025 - Software or Data Integrity Failures"
+        ],
+        "references": [
+          "https://docs.djangoproject.com/en/3.0/topics/security/#sql-injection-protection"
+        ],
+        "category": "security",
+        "technology": [
+          "django"
+        ],
+        "subcategory": [
+          "audit"
+        ],
+        "impact": "LOW",
+        "likelihood": "MEDIUM",
+        "confidence": "LOW",
+        "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+        "vulnerability_class": [
+          "Mass Assignment"
+        ],
+        "source": "https://semgrep.dev/r/python.django.security.injection.tainted-sql-string.tainted-sql-string",
+        "shortlink": "https://sg.run/PbZp"
+      },
+      "severity": "ERROR",
+      "fingerprint": "requires login",
+      "lines": "requires login",
+      "validation_state": "NO_VALIDATOR",
+      "engine_kind": "OSS"
+    }
+  },
+  {
+    "check_id": "python.flask.security.injection.tainted-sql-string.tainted-sql-string",
+    "path": "app/main.py",
+    "start": {
+      "line": 15,
+      "col": 13,
+      "offset": 270
+    },
+    "end": {
+      "line": 15,
+      "col": 63,
+      "offset": 320
+    },
+    "extra": {
+      "message": "Detected user input used to manually construct a SQL string. This is usually bad practice because manual construction could accidentally result in a SQL injection. An attacker could use a SQL injection to steal or modify contents of the database. Instead, use a parameterized query which is available by default in most database engines. Alternatively, consider using an object-relational mapper (ORM) such as SQLAlchemy which will protect your queries.",
+      "metadata": {
+        "cwe": [
+          "CWE-704: Incorrect Type Conversion or Cast"
+        ],
+        "owasp": [
+          "A01:2017 - Injection",
+          "A03:2021 - Injection",
+          "A05:2025 - Injection"
+        ],
+        "references": [
+          "https://docs.sqlalchemy.org/en/14/core/tutorial.html#using-textual-sql",
+          "https://www.tutorialspoint.com/sqlalchemy/sqlalchemy_quick_guide.htm",
+          "https://docs.sqlalchemy.org/en/14/core/tutorial.html#using-more-specific-text-with-table-expression-literal-column-and-expression-column"
+        ],
+        "category": "security",
+        "technology": [
+          "sqlalchemy",
+          "flask"
+        ],
+        "subcategory": [
+          "vuln"
+        ],
+        "impact": "MEDIUM",
+        "likelihood": "MEDIUM",
+        "confidence": "MEDIUM",
+        "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+        "vulnerability_class": [
+          "Improper Validation"
+        ],
+        "source": "https://semgrep.dev/r/python.flask.security.injection.tainted-sql-string.tainted-sql-string",
+        "shortlink": "https://sg.run/JxZj"
+      },
+      "severity": "ERROR",
+      "fingerprint": "requires login",
+      "lines": "requires login",
+      "validation_state": "NO_VALIDATOR",
+      "engine_kind": "OSS"
+    }
+  },
+  {
+    "check_id": "python.lang.security.audit.eval-detected.eval-detected",
+    "path": "app/main.py",
+    "start": {
+      "line": 22,
+      "col": 14,
+      "offset": 457
+    },
+    "end": {
+      "line": 22,
+      "col": 30,
+      "offset": 473
+    },
+    "extra": {
+      "message": "Detected the use of eval(). eval() can be dangerous if used to evaluate dynamic content. If this content can be input from outside the program, this may be a code injection vulnerability. Ensure evaluated content is not definable by external sources.",
+      "metadata": {
+        "source-rule-url": "https://bandit.readthedocs.io/en/latest/blacklists/blacklist_calls.html#b307-eval",
+        "cwe": [
+          "CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code ('Eval Injection')"
+        ],
+        "owasp": [
+          "A03:2021 - Injection",
+          "A05:2025 - Injection"
+        ],
+        "asvs": {
+          "control_id": "5.2.4 Dyanmic Code Execution Features",
+          "control_url": "https://github.com/OWASP/ASVS/blob/master/4.0/en/0x13-V5-Validation-Sanitization-Encoding.md#v52-sanitization-and-sandboxing-requirements",
+          "section": "V5: Validation, Sanitization and Encoding Verification Requirements",
+          "version": "4"
+        },
+        "category": "security",
+        "technology": [
+          "python"
+        ],
+        "references": [
+          "https://owasp.org/Top10/A03_2021-Injection"
+        ],
+        "subcategory": [
+          "audit"
+        ],
+        "likelihood": "LOW",
+        "impact": "HIGH",
+        "confidence": "LOW",
+        "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+        "vulnerability_class": [
+          "Code Injection"
+        ],
+        "source": "https://semgrep.dev/r/python.lang.security.audit.eval-detected.eval-detected",
+        "shortlink": "https://sg.run/ZvrD"
+      },
+      "severity": "WARNING",
+      "fingerprint": "requires login",
+      "lines": "requires login",
+      "validation_state": "NO_VALIDATOR",
+      "engine_kind": "OSS"
+    }
+  },
+  {
+    "check_id": "python.django.security.injection.command.command-injection-os-system.command-injection-os-system",
+    "path": "app/main.py",
+    "start": {
+      "line": 28,
+      "col": 5,
+      "offset": 535
+    },
+    "end": {
+      "line": 29,
+      "col": 35,
+      "offset": 601
+    },
+    "extra": {
+      "message": "Request data detected in os.system. This could be vulnerable to a command injection and should be avoided. If this must be done, use the 'subprocess' module instead and pass the arguments as a list. See https://owasp.org/www-community/attacks/Command_Injection for more information.",
+      "metadata": {
+        "cwe": [
+          "CWE-78: Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')"
+        ],
+        "owasp": [
+          "A01:2017 - Injection",
+          "A03:2021 - Injection",
+          "A05:2025 - Injection"
+        ],
+        "references": [
+          "https://owasp.org/www-community/attacks/Command_Injection"
+        ],
+        "category": "security",
+        "technology": [
+          "django"
+        ],
+        "cwe2022-top25": true,
+        "cwe2021-top25": true,
+        "subcategory": [
+          "vuln"
+        ],
+        "likelihood": "MEDIUM",
+        "impact": "HIGH",
+        "confidence": "MEDIUM",
+        "license": "Semgrep Rules License v1.0. For more details, visit semgrep.dev/legal/rules-license",
+        "vulnerability_class": [
+          "Command Injection"
+        ],
+        "source": "https://semgrep.dev/r/python.django.security.injection.command.command-injection-os-system.command-injection-os-system",
+        "shortlink": "https://sg.run/Gen2"
+      },
+      "severity": "ERROR",
+      "fingerprint": "requires login",
+      "lines": "requires login",
+      "validation_state": "NO_VALIDATOR",
+      "engine_kind": "OSS"
+    }
+  }
+]
