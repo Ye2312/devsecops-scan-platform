@@ -1,0 +1,16 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: docker
+    directories: [/app-api, /scanner-worker]
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: pip
+    directories: [/shared, /app-api, /scanner-worker]
+    schedule:
+      interval: weekly
