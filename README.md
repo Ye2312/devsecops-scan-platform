@@ -42,7 +42,7 @@ docker compose up --build -d
 curl -s -X POST http://127.0.0.1:8000/scan \
   -H 'content-type: application/json' \
   -d '{"repo_url": "https://github.com/Ye2312/attack-emulator"}'
-# {"scan_id": "872b1954-…", "status": "queued"}
+
 
 curl -s "http://127.0.0.1:8000/reports/<scan_id>?severity=HIGH"
 ```
@@ -67,12 +67,12 @@ python -m worker.cli scan ./some/local/dir --format json
 ## Development
 
 ```bash
-make install    # .venv with all three packages + dev tools
-make db-up      # Postgres on 127.0.0.1:5432 (docker-compose.dev.yml)
+make install    
+make db-up      
 make migrate
-make test       # pytest; API and worker tests need the database
-make lint       # ruff + mypy
-make api        # uvicorn with reload
+make test       
+make lint       
+make api        
 make worker
 ```
 
