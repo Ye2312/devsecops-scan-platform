@@ -1,4 +1,7 @@
-.PHONY: install lint test db-up db-down db-reset migrate migration api clean
+.PHONY: install lint test up down logs db-up db-down db-reset migrate migration api worker clean
+
+# Postgres published on localhost for running the API, worker and tests from .venv.
+DEV_COMPOSE = docker compose -f docker-compose.yml -f docker-compose.dev.yml
 
 install:
 	python3 -m venv .venv
@@ -15,15 +18,24 @@ lint:
 test:
 	.venv/bin/pytest -v
 
+up:
+	docker compose up --build -d
+
+down:
+	docker compose down
+
+logs:
+	docker compose logs -f api worker
+
 db-up:
-	docker compose up -d db
+	$(DEV_COMPOSE) up -d db
 
 db-down:
 	docker compose down
 
 db-reset:
 	docker compose down -v
-	docker compose up -d db
+	$(DEV_COMPOSE) up -d db
 
 migrate:
 	.venv/bin/alembic upgrade head
@@ -35,6 +47,9 @@ migration:
 
 api:
 	.venv/bin/uvicorn app.main:app --reload --port 8000
+
+worker:
+	.venv/bin/python -m worker.main
 
 clean:
 	rm -rf .venv .pytest_cache .mypy_cache .ruff_cache

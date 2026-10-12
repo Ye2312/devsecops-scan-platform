@@ -1,12 +1,26 @@
+# Full stack: `docker compose up --build`. API on http://127.0.0.1:8000/docs.
+#
+# Network segmentation:
+#   backend  internal-only: db, migrate, api, worker. No route to the internet.
+#   edge     regular bridge: api (published port) and worker (clones repos, fetches
+#            Semgrep rules and the Trivy DB). The database is on backend only.
+
+x-hardening: &hardening
+  read_only: true
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  tmpfs: ["/tmp"]
+
+x-database-url: &database-url
+  DATABASE_URL: postgresql+psycopg://scanner:${POSTGRES_PASSWORD:-scanner}@db:5432/scanner
+
 services:
   db:
     image: postgres:16-alpine
     environment:
       POSTGRES_USER: scanner
-      POSTGRES_PASSWORD: scanner
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-scanner}
       POSTGRES_DB: scanner
-    ports:
-      - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -14,6 +28,64 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+    networks: [backend]
+
+  migrate:
+    <<: *hardening
+    build:
+      context: .
+      dockerfile: app-api/Dockerfile
+    image: devsecops-scan-platform/api:local
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      <<: *database-url
+    depends_on:
+      db:
+        condition: service_healthy
+    networks: [backend]
+
+  api:
+    <<: *hardening
+    build:
+      context: .
+      dockerfile: app-api/Dockerfile
+    image: devsecops-scan-platform/api:local
+    environment:
+      <<: *database-url
+    ports:
+      - "127.0.0.1:8000:8000"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    networks: [backend, edge]
+
+  worker:
+    <<: *hardening
+    build:
+      context: .
+      dockerfile: scanner-worker/Dockerfile
+    image: devsecops-scan-platform/worker:local
+    environment:
+      <<: *database-url
+    # The worker handles untrusted repositories: cap its resources and keep clones in memory.
+    tmpfs:
+      - /tmp:size=1g
+      - /home/scanner:uid=10001,mode=0700
+    volumes:
+      - trivy-cache:/var/cache/trivy
+    mem_limit: 2g
+    pids_limit: 256
+    stop_grace_period: 30s
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    networks: [backend, edge]
+
+networks:
+  backend:
+    internal: true
+  edge:
 
 volumes:
   pgdata:
+  trivy-cache:

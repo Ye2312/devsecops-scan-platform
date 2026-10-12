@@ -1,0 +1,10 @@
+# Local development override: exposes Postgres on localhost so the API, migrations and
+# tests can run from a host virtualenv (`make db-up`). Not used by the full stack.
+services:
+  db:
+    ports:
+      - "127.0.0.1:5432:5432"
+    networks: [backend, dev]
+
+networks:
+  dev:
