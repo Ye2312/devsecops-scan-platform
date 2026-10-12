@@ -1,5 +1,5 @@
 # Build from the repository root: docker build -f scanner-worker/Dockerfile .
-FROM python:3.12-slim-bookworm
+FROM python:3.14-slim-bookworm
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
