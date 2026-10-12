@@ -1,0 +1,29 @@
+# Accepted risks for the Trivy gate. Every entry needs a reason and an expiry date:
+# once expired, the finding fails the gate again and has to be re-assessed.
+
+vulnerabilities:
+  # Trivy's own Go dependencies, inside the worker image. All are denial-of-service bugs in
+  # HTTP/2, gRPC and TLS request handling. The worker runs Trivy as a short-lived CLI that only
+  # makes outbound requests to the vulnerability DB registry and exposes no listener, so the
+  # server-side paths are unreachable; a hostile server could at most stall one scan, which the
+  # 300 s scan timeout already bounds. Remove when a Trivy release is built with fixed versions.
+  - id: CVE-2026-78667
+    paths: ["usr/local/bin/trivy"]
+    statement: Server-side net/http Range DoS; Trivy runs as a CLI client in the worker.
+    expired_at: 2026-11-30
+  - id: CVE-2026-78669
+    paths: ["usr/local/bin/trivy"]
+    statement: HTTP/2 SETTINGS flood DoS; worst case stalls one scan, bounded by the scan timeout.
+    expired_at: 2026-11-30
+  - id: CVE-2026-84304
+    paths: ["usr/local/bin/trivy"]
+    statement: gRPC server DoS; Trivy is not run in client/server mode here.
+    expired_at: 2026-11-30
+  - id: CVE-2026-84445
+    paths: ["usr/local/bin/trivy"]
+    statement: gRPC server DoS; Trivy is not run in client/server mode here.
+    expired_at: 2026-11-30
+  - id: CVE-2026-97031
+    paths: ["usr/local/bin/trivy"]
+    statement: TLS ECH DoS on the server side of the handshake; Trivy acts only as a TLS client.
+    expired_at: 2026-11-30

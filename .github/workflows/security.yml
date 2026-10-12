@@ -1,0 +1,109 @@
+name: Security
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # New CVEs are published without any code change: rescan weekly.
+    - cron: "0 5 * * 1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # A deliberately vulnerable app the scanner is tested against; it must not fail our own gate.
+  FIXTURES: tests/fixtures
+
+jobs:
+  sast:
+    name: SAST (Semgrep)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Install Semgrep
+        run: pip install semgrep==1.179.0
+      - name: Scan
+        run: >
+          semgrep scan --metrics off
+          --config p/python --config p/dockerfile --config p/github-actions --config p/secrets
+          --exclude "$FIXTURES"
+          --sarif --output semgrep.sarif .
+      - name: Upload to GitHub code scanning
+        if: always() && hashFiles('semgrep.sarif') != ''
+        uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+        with:
+          sarif_file: semgrep.sarif
+          category: semgrep
+      - name: Gate on high-severity findings
+        run: |
+          high=$(jq '[.runs[].results[] | select(.level == "error")] | length' semgrep.sarif)
+          echo "Semgrep high-severity findings: $high"
+          test "$high" -eq 0
+
+  repo:
+    name: Dependencies, secrets, IaC (Trivy)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Trivy
+        run: sudo sh scripts/install-trivy.sh /usr/local/bin
+      - name: Scan
+        run: >
+          trivy fs --scanners vuln,secret,misconfig --skip-dirs "$FIXTURES"
+          --format sarif --output trivy-fs.sarif .
+      - name: Upload to GitHub code scanning
+        if: always() && hashFiles('trivy-fs.sarif') != ''
+        uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+        with:
+          sarif_file: trivy-fs.sarif
+          category: trivy-fs
+      - name: Gate on HIGH/CRITICAL
+        run: >
+          trivy fs --scanners vuln,secret,misconfig --skip-dirs "$FIXTURES"
+          --severity HIGH,CRITICAL --exit-code 1 .
+
+  image:
+    name: Container image (Trivy) — ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [app-api, scanner-worker]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Build image
+        run: docker build -f "${{ matrix.service }}/Dockerfile" -t "scan-target:${{ github.sha }}" .
+      - name: Install Trivy
+        run: sudo sh scripts/install-trivy.sh /usr/local/bin
+      - name: Scan
+        run: trivy image --format sarif --output trivy-image.sarif "scan-target:${{ github.sha }}"
+      - name: Upload to GitHub code scanning
+        if: always() && hashFiles('trivy-image.sarif') != ''
+        uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+        with:
+          sarif_file: trivy-image.sarif
+          category: trivy-image-${{ matrix.service }}
+      # Still reported to code scanning, but not blocking: unfixed OS-package CVEs (nothing to
+      # upgrade to yet) and the time-boxed risk acceptances in .trivyignore.yaml.
+      - name: Gate on fixable HIGH/CRITICAL
+        run: >
+          trivy image --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1
+          --ignorefile .trivyignore.yaml
+          "scan-target:${{ github.sha }}"
