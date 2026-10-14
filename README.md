@@ -67,23 +67,24 @@ python -m worker.cli scan ./some/local/dir --format json
 ## Development
 
 ```bash
-make install    
-make db-up      
+make install
+make db-up
 make migrate
-make test       
-make lint       
-make api        
+make test
+make lint
+make api
 make worker
 ```
 
 ## Deploying to a server
 
-`deploy/ansible` turns a fresh Ubuntu 24.04 host into a running instance:
+`deploy/ansible` turns a fresh Ubuntu 24.04 host into a running instance. Point
+`inventories/production.ini` at your host, then:
 
 ```bash
 cd deploy/ansible
 ansible-galaxy collection install -r requirements.yml
-cp inventories/example.ini inventories/production.ini   # point it at your host
+cp inventories/example.ini inventories/production.ini
 ansible-playbook -i inventories/production.ini site.yml
 ```
 
