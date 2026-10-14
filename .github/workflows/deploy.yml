@@ -1,0 +1,44 @@
+name: Deploy (Ansible)
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ansible:
+    name: Lint and deploy onto a fresh runner
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: deploy/ansible
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+      - name: Install Ansible
+        run: |
+          pip install ansible-core==2.21.4 ansible-lint==26.9.0
+          ansible-galaxy collection install -r requirements.yml
+      - name: Lint
+        run: ansible-lint
+      # The playbook runs git as root against the runner-owned checkout.
+      - name: Trust the checkout for root
+        run: sudo git config --system --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Deploy
+        run: >
+          ansible-playbook -i inventories/ci.ini site.yml
+          -e app_repo="$GITHUB_WORKSPACE" -e app_version="$GITHUB_SHA"
+      - name: Second run must change nothing
+        run: |
+          ansible-playbook -i inventories/ci.ini site.yml \
+            -e app_repo="$GITHUB_WORKSPACE" -e app_version="$GITHUB_SHA" | tee second-run.log
+          grep -Eq 'changed=0 +unreachable=0 +failed=0' second-run.log
