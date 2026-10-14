@@ -30,12 +30,12 @@ services:
       retries: 10
     networks: [backend]
 
+  # Reuses the image the api service builds. Building it in both services would produce two
+  # image IDs under one tag, and every `up` would then recreate migrate and api.
   migrate:
     <<: *hardening
-    build:
-      context: .
-      dockerfile: app-api/Dockerfile
     image: devsecops-scan-platform/api:local
+    pull_policy: never
     command: ["alembic", "upgrade", "head"]
     environment:
       <<: *database-url
