@@ -1,0 +1,7 @@
+---
+app_repo: https://github.com/Ye2312/devsecops-scan-platform.git
+# A tag or commit SHA for reproducible deploys; a branch name tracks its latest commit.
+app_version: main
+app_dir: /opt/devsecops-scan-platform
+app_project_name: scanner
+app_readyz_url: http://127.0.0.1:8000/readyz

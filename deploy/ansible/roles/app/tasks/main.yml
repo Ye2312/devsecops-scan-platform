@@ -1,0 +1,48 @@
+---
+- name: Install git
+  ansible.builtin.apt:
+    name: git
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Check out the application
+  ansible.builtin.git:
+    repo: "{{ app_repo }}"
+    dest: "{{ app_dir }}"
+    version: "{{ app_version }}"
+  register: app_checkout
+
+# force: false keeps the password from the first run; regenerating it would lock the API
+# out of the existing database volume.
+- name: Generate the database password on first deploy
+  ansible.builtin.copy:
+    dest: "{{ app_dir }}/.env"
+    content: "POSTGRES_PASSWORD={{ lookup('ansible.builtin.password', '/dev/null', length=32, chars=['ascii_letters', 'digits']) }}\n"
+    owner: root
+    group: root
+    mode: "0600"
+    force: false
+  no_log: true
+
+- name: Build and start the stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ app_dir }}"
+    project_name: "{{ app_project_name }}"
+    # Rebuild only when the checkout moved; otherwise build just what is missing.
+    build: "{{ 'always' if app_checkout.changed else 'policy' }}"
+    remove_orphans: true
+    state: present
+  register: app_compose
+  # Compose restarts the exited one-off migrate job on every `up`. Migrations are idempotent,
+  # so that alone is not drift; anything done to the other containers is.
+  changed_when: app_compose.actions | rejectattr('id', 'search', '-migrate-') | list | length > 0
+
+- name: Wait until the API is ready
+  ansible.builtin.uri:
+    url: "{{ app_readyz_url }}"
+    status_code: 200
+  register: app_readyz
+  until: app_readyz.status == 200
+  retries: 30
+  delay: 5

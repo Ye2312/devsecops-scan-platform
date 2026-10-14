@@ -1,0 +1,60 @@
+---
+- name: Install baseline security packages
+  ansible.builtin.apt:
+    name:
+      - ufw
+      - unattended-upgrades
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Enable automatic security updates
+  ansible.builtin.copy:
+    dest: /etc/apt/apt.conf.d/20auto-upgrades
+    content: |
+      APT::Periodic::Update-Package-Lists "1";
+      APT::Periodic::Unattended-Upgrade "1";
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Check for an SSH server
+  ansible.builtin.stat:
+    path: /etc/ssh/sshd_config
+  register: hardening_sshd_config
+
+# sshd uses the first value it reads for each option, and Ubuntu includes sshd_config.d/*.conf
+# in lexical order, so the 10- prefix wins over cloud-init's 50-cloud-init.conf.
+- name: Allow only key-based SSH logins and no root login
+  ansible.builtin.copy:
+    dest: /etc/ssh/sshd_config.d/10-hardening.conf
+    content: |
+      PasswordAuthentication no
+      KbdInteractiveAuthentication no
+      PermitRootLogin no
+    owner: root
+    group: root
+    mode: "0644"
+  when: hardening_sshd_config.stat.exists
+  notify: Reload SSH
+
+- name: Validate the resulting SSH configuration
+  ansible.builtin.command: /usr/sbin/sshd -t
+  changed_when: false
+  when: hardening_sshd_config.stat.exists
+
+# Docker publishes container ports through its own iptables chains and bypasses ufw,
+# which is why the API binds to 127.0.0.1 in docker-compose.yml instead of relying on this.
+- name: Allow SSH with rate limiting
+  community.general.ufw:
+    rule: limit
+    port: "22"
+    proto: tcp
+  tags: [firewall]
+
+- name: Deny other incoming traffic and enable the firewall
+  community.general.ufw:
+    state: enabled
+    direction: incoming
+    policy: deny
+  tags: [firewall]

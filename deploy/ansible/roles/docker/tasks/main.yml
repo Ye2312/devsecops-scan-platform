@@ -1,0 +1,23 @@
+---
+- name: Check for an existing Docker Compose v2
+  ansible.builtin.command: docker compose version
+  register: docker_compose_check
+  changed_when: false
+  failed_when: false
+
+- name: Install Docker Engine and the Compose plugin
+  ansible.builtin.apt:
+    name:
+      - docker.io
+      - docker-compose-v2
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+  when: docker_compose_check.rc != 0
+
+- name: Start Docker and enable it on boot
+  ansible.builtin.systemd_service:
+    name: docker
+    state: started
+    enabled: true
+  when: ansible_facts.service_mgr == "systemd"
