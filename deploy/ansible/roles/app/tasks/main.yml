@@ -25,6 +25,15 @@
     force: false
   no_log: true
 
+- name: List the running services
+  ansible.builtin.command:
+    cmd: docker compose --project-name {{ app_project_name }} ps --status running --services
+    chdir: "{{ app_dir }}"
+  register: app_running
+  changed_when: false
+
+# Every `up` restarts the exited one-off migrate job, and Compose 2.x then restarts api as well,
+# so the stack is only brought up when the code changed or a long-running service is down.
 - name: Build and start the stack
   community.docker.docker_compose_v2:
     project_src: "{{ app_dir }}"
@@ -33,10 +42,7 @@
     build: "{{ 'always' if app_checkout.changed else 'policy' }}"
     remove_orphans: true
     state: present
-  register: app_compose
-  # Compose restarts the exited one-off migrate job on every `up`. Migrations are idempotent,
-  # so that alone is not drift; anything done to the other containers is.
-  changed_when: app_compose.actions | rejectattr('id', 'search', '-migrate-') | list | length > 0
+  when: app_checkout.changed or (app_services | difference(app_running.stdout_lines) | length > 0)
 
 - name: Wait until the API is ready
   ansible.builtin.uri:
