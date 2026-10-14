@@ -38,6 +38,17 @@
   when: hardening_sshd_config.stat.exists
   notify: Reload SSH
 
+# Ubuntu 24.04 starts sshd through socket activation, and ssh.service creates /run/sshd only
+# when it runs, so on a host nobody has logged into yet `sshd -t` fails without it.
+- name: Ensure the sshd privilege separation directory exists
+  ansible.builtin.file:
+    path: /run/sshd
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  when: hardening_sshd_config.stat.exists
+
 - name: Validate the resulting SSH configuration
   ansible.builtin.command: /usr/sbin/sshd -t
   changed_when: false

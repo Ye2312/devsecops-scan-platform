@@ -20,4 +20,4 @@
     name: docker
     state: started
     enabled: true
-  when: ansible_facts.service_mgr == "systemd"
+  when: systemd_runtime.stat.exists

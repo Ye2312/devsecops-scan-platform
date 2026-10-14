@@ -3,3 +3,4 @@
   ansible.builtin.systemd_service:
     name: ssh
     state: reloaded
+  when: systemd_runtime.stat.exists
