@@ -76,6 +76,26 @@ make api
 make worker
 ```
 
+## Deploying to a server
+
+`deploy/ansible` turns a fresh Ubuntu 24.04 host into a running instance:
+
+```bash
+cd deploy/ansible
+ansible-galaxy collection install -r requirements.yml
+cp inventories/example.ini inventories/production.ini   # point it at your host
+ansible-playbook -i inventories/production.ini site.yml
+```
+
+- `hardening`: SSH with keys only and no root login; ufw denies incoming traffic except
+  rate-limited SSH; unattended security upgrades.
+- `docker`: Docker Engine and the Compose plugin, if they are missing.
+- `app`: checks out a pinned version, generates the database password once (`.env`, mode 600),
+  builds and starts the stack, waits for `/readyz`.
+
+Docker publishes container ports through its own iptables chains and bypasses ufw, so the API
+stays bound to 127.0.0.1. To expose it, put a reverse proxy with TLS in front.
+
 ## Security design
 
 **Untrusted input: the repository URL.** Only `https://github.com/<owner>/<repo>` is accepted:
@@ -107,6 +127,7 @@ its port, the worker to reach GitHub and the scanners' rule and vulnerability fe
 | Workflow | What runs | Blocks the build on |
 |---|---|---|
 | `ci.yml` | ruff, mypy, Alembic migration + schema drift check, pytest against Postgres | any failure |
+| `deploy.yml` | ansible-lint, then the playbook deploys onto a fresh runner and runs a second time | any failure, or a second run that changes anything |
 | `security.yml` | Semgrep (`p/python`, `p/dockerfile`, `p/github-actions`, `p/secrets`) | high-severity findings |
 | | `trivy fs`: dependencies, secrets, IaC | HIGH / CRITICAL |
 | | `trivy image` for both images | fixable HIGH / CRITICAL |
